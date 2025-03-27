@@ -1,0 +1,28 @@
+Implementation reasoning:
+
+- The HttpRequestQuery interface sets the only required method that each HTTP request must have - the getRequestQuery().
+  That way different types of HTTP requests can exist based on their query string -> GET, PUT, PATCH, etc.
+  The fetch method of the NewsFetcher interface can take any HTTP request that implements HttpRequestQuery, so that way
+  each NewsFetcher implementation is not directly aware of the underlying type of HTTP request it is sending to the REST API.
+  This consideration is made analogically to one of the main REST architecture principles - each resource
+  (in this case: newsapi.org/v2/top-headlines) must be reached only from one URI for any type of CRUD operations.
+
+- The whole creation process of any HTTP request can be done in two main ways depending on the developer's choice.
+  The first is with the corresponding HTTP request class constructor. Once an object has been created, its state can be changed
+  using the given selector and mutator methods.
+  The second (and the more generic way) is with a custom builder. In order that pattern to be applied, a HTTP request implementation
+  must provide only a builder() method that to return any of the available builders.
+  It is preferable each builder to implement the HttpRequestBuilderAPI in order to override the build() method.
+  Besides that the whole build process of a HTTP request depends only on the given builder implementation by the developer.
+  The separation between a builder and the object being built (the HTTP request) into different class hierarchies is due to
+  the Open-Closed principle, which says that any class (HTTP requests hierarchy) must be open for addition (adding new ways
+  for building requests), but closed for modification (an already linked HTTP request with a builder - done in the build() method,
+  cannot change its way of building).
+
+- The applied Builder design pattern in the construction of a HTTP request sets as required entities of each HTTP request
+  the API key and the keywords collection. All of the other HTTP request entities like country, category adn etc. are optional
+  as part of the request query.
+
+- The applied implementation decisions are made in order to make any future upgrades of the NewsFetcher API easier and
+  also to not violate the Open-Closed SOLID principle.
+
